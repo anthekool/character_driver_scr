@@ -1,7 +1,7 @@
 INSTALL_DIR=modules
 ifneq (${KERNELRELEASE},)
 	obj-m := lkm.o
-lkm-objs := init.o clean.o open_dev.o write_dev.o
+lkm-objs := init.o clean.o open_dev.o write_dev.o read_dev.o
 
 else
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build

@@ -10,7 +10,7 @@
 
 extern ssize_t  write_dev(struct file *, const char *, size_t , loff_t *);
 long could_not_copy;
-struct scull_qset *lqset;
+//struct scull_qset *lqset;
 
 
 ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_pos)
@@ -27,15 +27,17 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 
 	printk(KERN_INFO "Present in write file\n");
 	ldev->qset_struc = (struct scull_qset *)kmalloc(sizeof(struct scull_qset),GFP_KERNEL);
-	lqset->data = (void **)kmalloc(sizeof(char *)*ldev->qset,GFP_KERNEL);
-	memset(lqset->data,0,sizeof(char *)*ldev->qset);
-	lqset->data[0]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
-	could_not_copy = copy_from_user(lqset->data[0],buf,4);
+	ldev->qset_struc->data = (void **)kmalloc(sizeof(char *)*ldev->qset,GFP_KERNEL);
+	memset(ldev->qset_struc->data,0,sizeof(char *)*ldev->qset);
+	ldev->qset_struc->data[0]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
+	could_not_copy = copy_from_user(ldev->qset_struc->data[0],buf,4);
+
 	if(could_not_copy == 0)
 	{
 		printk(KERN_INFO "copy from user %ld\n",could_not_copy);
 	}
-	if(lqset->data != NULL)
+
+	if(ldev->qset_struc->data != NULL)
 	{
 		printk(KERN_INFO "kmalloc successfully");
 	}
