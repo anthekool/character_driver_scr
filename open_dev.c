@@ -7,20 +7,21 @@
 #include <linux/cdev.h>
 #include <linux/kernel.h>
 #include <asm/uaccess.h>
-//#include <asm/system.h>
 #include <linux/fcntl.h>
 
-//extern ssize_t write_dev(struct file *, char *, size_t , loff_t *);
+extern ssize_t read_dev(struct file *, char *, size_t , loff_t *);
 extern int scull_trim(struct scull_dev *);
 extern int open_dev(struct inode *,struct file *);
 extern int close_dev(struct inode *,struct file *);
 ssize_t write_dev(struct file *, const char *, size_t , loff_t *);
+
+
 struct file_operations foper = 
   {
 		write:	 write_dev,
+		read:    read_dev,
           	open: 	open_dev,
-         	release: close_dev
-		//write   : write_dev     
+         	release: close_dev     
  
    };
 
@@ -28,7 +29,7 @@ struct file_operations foper =
 int open_dev(struct inode *inode,struct file *fops)
 {
 	struct scull_dev *ldev;
-	//struct scull_dev c_dev;
+	
 	ldev = dev;
 	printk(KERN_INFO "open device\n");
 	if(ldev == NULL)
@@ -65,12 +66,5 @@ int scull_trim(struct scull_dev *temp)
 
 }
 
-/*ssize_t write_dev(struct file *filp, char *buf, size_t count, loff_t *f_pos)
-{
 
-        printk(KERN_INFO "Present in write file\n");
-        return 0;
-
-
-}*/
 

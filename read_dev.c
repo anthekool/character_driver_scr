@@ -8,14 +8,16 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>
 
-extern ssize_t  read_dev(struct file *, const char *, size_t , loff_t *);
-long could_not_copy;
-struct scull_qset *lqset;
+extern ssize_t  read_dev(struct file *,char *, size_t , loff_t *);
+//long could_not_copy;
+//struct scull_qset *lqset;
 
 
 ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 {
-	struct scull_dev *ldev;
+
+
+//	struct scull_dev *ldev;
 //	ldev->qset = 16;
 //	ldev->quantum = 4;
 //	struct scull_qset *lqset;
