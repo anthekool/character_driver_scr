@@ -32,7 +32,7 @@ ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 //	lqset->data = (void **)kmalloc(sizeof(char *)*ldev->qset,GFP_KERNEL);
 //	memset(lqset->data,0,sizeof(char *)*ldev->qset);
 //	lqset->data[0]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
-	could_read_not_copy = copy_to_user(buf,ldev->qset_struc->data[0],4);
+	could_read_not_copy = copy_to_user(buf,ldev->qset_struc->data[0],count);
 	if(could_read_not_copy == 0)
 	{
 		printk(KERN_INFO "copy from read user %s\n",buf);
@@ -47,7 +47,7 @@ ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 	else
 		printk(KERN_INFO "read error %s\n",buf);
 
-	return (4-could_read_not_copy);
+	return (count-could_read_not_copy);
 
 
 }

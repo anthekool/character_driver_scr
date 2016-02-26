@@ -4,8 +4,8 @@
 #include<sys/types.h>
 #include<sys/stat.h>
 #include<unistd.h>
-char write_bytes[]="anup";
-char read_bytes[4];
+char write_bytes[]="long way to go..... anupam work hard";
+char read_bytes[50];
 int main()
 {
 	int fd,len,wr,rd;
@@ -17,12 +17,12 @@ int main()
 	printf("file open sucessfully\n");
 	len = strlen(write_bytes);
 	wr = write(fd,write_bytes,len);
-	if(wr == 4)
+	if(wr == len)
 	printf("data write successfully\n");
 	else
 	printf("error in writing\n");
 	rd = read(fd,read_bytes,len);
-	if(rd == 4)
+	if(rd == len)
 	printf("read successfully\n");
 	else
 	printf("error in reading file\n");

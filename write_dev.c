@@ -16,25 +16,40 @@ long could_not_copy;
 ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_pos)
 {
 	struct scull_dev *ldev;
-//	ldev->qset = 16;
-//	ldev->quantum = 4;
+	char no_of_quantum;
+	char rest_byte; 
+	int counter;
+	int llqset,llquantum;
+	llqset = 4;//ldev->qset;
+	llquantum = 4;///ldev->quantum;;
 //	struct scull_qset *lqset;
 //	struct scull_qset *lqset;
 //	long could_not_copy;
 	ldev = fops->private_data; 
 //	ldev->qset = 16;
 //	ldev->quantum = 4;
+	rest_byte = count % llquantum;
+	if(rest_byte)
+	
+		no_of_quantum = count /llquantum +1;
+	else
+		no_of_quantum = count /llquantum;
 
 	printk(KERN_INFO "Present in write file\n");
 	ldev->qset_struc = (struct scull_qset *)kmalloc(sizeof(struct scull_qset),GFP_KERNEL);
 	ldev->qset_struc->data = (void **)kmalloc(sizeof(char *)*ldev->qset,GFP_KERNEL);
 	memset(ldev->qset_struc->data,0,sizeof(char *)*ldev->qset);
-	ldev->qset_struc->data[0]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
-	could_not_copy = copy_from_user(ldev->qset_struc->data[0],buf,4);
+	for(counter = 0;counter < no_of_quantum;counter++)
+	{
+		ldev->qset_struc->data[counter]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
+
+	}///	ldev->qset_struc->data[1]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
+		could_not_copy = copy_from_user(ldev->qset_struc->data[0],buf,count);
+	//}
 
 	if(could_not_copy == 0)
 	{
-		printk(KERN_INFO "copy from user %ld \n",could_not_copy);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
+		printk(KERN_INFO "copy from user %ld \n",count);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
 	}
 
 	if(ldev->qset_struc->data != NULL)
@@ -45,7 +60,7 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 	else
 		printk(KERN_INFO "erro\n");
 
-	return (4-could_not_copy);
+	return (count-could_not_copy);
 
 
 }
