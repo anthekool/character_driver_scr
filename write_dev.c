@@ -34,7 +34,7 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 
 	if(could_not_copy == 0)
 	{
-		printk(KERN_INFO "copy from user %ld\n",could_not_copy);
+		printk(KERN_INFO "copy from user %ld \n",could_not_copy);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
 	}
 
 	if(ldev->qset_struc->data != NULL)
@@ -45,7 +45,7 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 	else
 		printk(KERN_INFO "erro\n");
 
-	return 0;
+	return (4-could_not_copy);
 
 
 }

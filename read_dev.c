@@ -47,7 +47,7 @@ ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 	else
 		printk(KERN_INFO "read error %s\n",buf);
 
-	return 0;
+	return (4-could_read_not_copy);
 
 
 }

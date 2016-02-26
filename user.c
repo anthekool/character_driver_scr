@@ -17,12 +17,12 @@ int main()
 	printf("file open sucessfully\n");
 	len = strlen(write_bytes);
 	wr = write(fd,write_bytes,len);
-	if(wr == 0)
+	if(wr == 4)
 	printf("data write successfully\n");
 	else
 	printf("error in writing\n");
 	rd = read(fd,read_bytes,len);
-	if(rd == 0)
+	if(rd == 4)
 	printf("read successfully\n");
 	else
 	printf("error in reading file\n");
