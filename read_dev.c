@@ -18,22 +18,41 @@ ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 
 
 	struct scull_dev *ldev;
+	int no_of_quantum,llquantum;
+	int counter;
+	long no_of_byte=0;
+	int rest_byte;
 //	ldev->qset = 16;
-//	ldev->quantum = 4;
+//	llquantum =	ldev->quantum 
 //	struct scull_qset *lqset;
 //	struct scull_qset *lqset;
 //	long could_not_copy;
 	ldev = fops->private_data; 
 //	ldev->qset = 16;
-//	ldev->quantum = 4;
-
+	llquantum = ldev->quantum;
+	rest_byte = count %ldev->quantum; 
+	no_of_quantum = count/ldev->quantum;
+	if(count%ldev->quantum)
+	no_of_quantum++;
 	printk(KERN_INFO "Present in read file\n");
 //	ldev->qset_struc = (struct scull_qset *)kmalloc(sizeof(struct scull_qset),GFP_KERNEL);
 //	lqset->data = (void **)kmalloc(sizeof(char *)*ldev->qset,GFP_KERNEL);
 //	memset(lqset->data,0,sizeof(char *)*ldev->qset);
 //	lqset->data[0]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
-	could_read_not_copy = copy_to_user(buf,ldev->qset_struc->data[0],count);
-	if(could_read_not_copy == 0)
+//
+	for(counter =0;counter < no_of_quantum; counter++)
+	{
+
+		if((counter == no_of_quantum-1)&&(rest_byte))
+		{
+			llquantum = rest_byte;			
+		
+		}
+
+		could_read_not_copy = copy_to_user(&buf[no_of_byte],ldev->qset_struc->data[counter],llquantum);
+		no_of_byte = no_of_byte + llquantum - could_read_not_copy;
+	}
+	if(no_of_byte == count)
 	{
 		printk(KERN_INFO "copy from read user %s\n",buf);
 	}
@@ -47,7 +66,7 @@ ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 	else
 		printk(KERN_INFO "read error %s\n",buf);
 
-	return (count-could_read_not_copy);
+	return (no_of_byte);
 
 
 }
