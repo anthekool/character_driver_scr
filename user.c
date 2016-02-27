@@ -4,7 +4,7 @@
 #include<sys/types.h>
 #include<sys/stat.h>
 #include<unistd.h>
-char write_bytes[]="long way to go..... anupam work hard";
+char write_bytes[]="long way to go ki hai anupam work hard";
 char read_bytes[50];
 int main()
 {

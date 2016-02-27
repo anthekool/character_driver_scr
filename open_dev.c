@@ -16,10 +16,11 @@ extern int close_dev(struct inode *,struct file *);
 ssize_t write_dev(struct file *, const char *, size_t , loff_t *);
 
 
-struct file_operations foper = 
-  {
+struct file_operations foper =   
+{
+		read: 	read_dev,
 		write:	 write_dev,
-		read:    read_dev,
+//		read:    read_dev,
           	open: 	open_dev,
          	release: close_dev     
  

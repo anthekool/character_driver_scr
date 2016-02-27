@@ -9,7 +9,7 @@
 #include <linux/fs.h>
 
 extern ssize_t  write_dev(struct file *, const char *, size_t , loff_t *);
-long could_not_copy;
+long could_not_copy,length_write=0;
 //struct scull_qset *lqset;
 
 
@@ -20,7 +20,7 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 	char rest_byte; 
 	int counter;
 	int llqset,llquantum;
-	llqset = 4;//ldev->qset;
+	llqset = 16;//ldev->qset;
 	llquantum = 4;///ldev->quantum;;
 //	struct scull_qset *lqset;
 //	struct scull_qset *lqset;
@@ -42,16 +42,27 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 	for(counter = 0;counter < no_of_quantum;counter++)
 	{
 		ldev->qset_struc->data[counter]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
+		memset(ldev->qset_struc->data[counter],0,sizeof(ldev->quantum));
+	///	ldev->qset_struc->data[1]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
+		if((counter == no_of_quantum-1)&&(rest_byte))
+		{
+			
+//			length_write = length_write -llquantum + rest_byte;	
+			llquantum = rest_byte;
 
-	}///	ldev->qset_struc->data[1]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
-		could_not_copy = copy_from_user(ldev->qset_struc->data[0],buf,count);
-	//}
-
-	if(could_not_copy == 0)
-	{
-		printk(KERN_INFO "copy from user %ld \n",count);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
+		}
+		could_not_copy = copy_from_user(ldev->qset_struc->data[counter],&buf[length_write],llquantum);
+			
+		
+		length_write = length_write - could_not_copy+llquantum;		
 	}
 
+	if(length_write == count)
+	{
+		printk(KERN_INFO "copy from user %ld \n",length_write);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
+	}
+
+	printk(KERN_INFO "copy from user %ld \n",length_write);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
 	if(ldev->qset_struc->data != NULL)
 	{
 		printk(KERN_INFO "kmalloc successfully");
@@ -60,7 +71,7 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 	else
 		printk(KERN_INFO "erro\n");
 
-	return (count-could_not_copy);
+	return (length_write);
 
 
 }
