@@ -9,67 +9,164 @@
 #include <linux/fs.h>
 
 extern ssize_t  write_dev(struct file *, const char *, size_t , loff_t *);
-long could_not_copy,length_write=0;
-//struct scull_qset *lqset;
 
 
+struct scull_qset *first;
 ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_pos)
 {
 	struct scull_dev *ldev;
-	char no_of_quantum;
-	char rest_byte; 
-	int counter;
-	int llqset,llquantum;
-	llqset = 16;//ldev->qset;
-	llquantum = 4;///ldev->quantum;;
-//	struct scull_qset *lqset;
-//	struct scull_qset *lqset;
-//	long could_not_copy;
-	ldev = fops->private_data; 
-//	ldev->qset = 16;
-//	ldev->quantum = 4;
-	rest_byte = count % llquantum;
-	if(rest_byte)
+	int counter=0,i=0,no_of_qset_item=0,no_of_quantum,j=0;
+	int llqset,llquantum,datasize;
+	long could_not_copy,length_write=0;
+	size_t lcount;
 	
-		no_of_quantum = count /llquantum +1;
-	else
-		no_of_quantum = count /llquantum;
-
-	printk(KERN_INFO "Present in write file\n");
-	ldev->qset_struc = (struct scull_qset *)kmalloc(sizeof(struct scull_qset),GFP_KERNEL);
-	ldev->qset_struc->data = (void **)kmalloc(sizeof(char *)*ldev->qset,GFP_KERNEL);
-	memset(ldev->qset_struc->data,0,sizeof(char *)*ldev->qset);
-	for(counter = 0;counter < no_of_quantum;counter++)
+	/*read outside memory pointing  I/O address */
+	ldev = fops->private_data; 
+	llqset = ldev->qset;
+	llquantum = ldev->quantum;
+	datasize = (llqset*llquantum);
+	/*calculate number of qset item means no of qset structure*/
+	no_of_qset_item = count /datasize;
+	if(count%datasize)
+	no_of_qset_item++;
+	/*calculate number of quantum*/
+	no_of_quantum = (count/llquantum);
+	if(count %llquantum)
+	no_of_quantum++;
+	
+	lcount = count;
+	
+	printk(KERN_INFO "Enter in write file with quantum no %d\n",no_of_quantum);
+	
+	
+	for(i = 0; i < no_of_qset_item; i++)
 	{
-		ldev->qset_struc->data[counter]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
-		memset(ldev->qset_struc->data[counter],0,sizeof(ldev->quantum));
-	///	ldev->qset_struc->data[1]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
-		if((counter == no_of_quantum-1)&&(rest_byte))
+		
+		printk(KERN_INFO "qset item no is = %d\n",no_of_qset_item);
+		if(i == 0)
 		{
+
+			/*First qset item to be initialized*/
+			 ldev->qset_struc  = (struct scull_qset *)kmalloc(sizeof(struct scull_qset),GFP_KERNEL);
+			first = ldev->qset_struc;
+			if(!first)
+			{
+				
+				printk(KERN_INFO "Error in first qset item memory allocation\n");
+				return 0;
+			}
 			
-//			length_write = length_write -llquantum + rest_byte;	
-			llquantum = rest_byte;
+			else
+			{
+				memset(first,0,sizeof(struct scull_qset));
+				printk(KERN_INFO "Error in first qset item memory allocation\n");
+				
+			
+			}
+
+
+			first->data = (void **)kmalloc(sizeof(char *)*ldev->qset,GFP_KERNEL);
+			if(!first->data)
+			{
+				printk(KERN_INFO "Error in data memory allocation\n");
+				return 0;	
+			}
+			else
+			{
+				memset(first->data,0,sizeof(char *)*ldev->qset);
+
+				
+			}
+		}
+					/*qset item to be initialized one by one */
+		else
+
+		{
+			//printk(KERN_INFO "present in second file %d",no_of_qset_struc);
+			first->next = (struct scull_qset *)kmalloc(sizeof(struct scull_qset),GFP_KERNEL);
+						
+			if(first->next)
+			{
+			
+				printk(KERN_INFO "next qset crtead successfully\n");
+				//first = first->next;
+				memset(first->next,0,sizeof(struct scull_qset));
+				first = first->next;
+				//return 0;
+			}
+			else
+			{
+				printk(KERN_INFO "Error in second item memory allocation\n");
+				return 0;
+			}
+		
+		
+			first->data = (void **)kmalloc(sizeof(char *)*ldev->qset,GFP_KERNEL);
+			if(!first->data)
+			{
+				printk(KERN_INFO "Error in data memory allocation\n");
+				return 0;	
+			}
+			else
+			{
+				memset(first->data,0,sizeof(char *)*ldev->qset);
+			}
+	
+	
+		}
+	}
+	
+	//return 0;	
+	first = ldev->qset_struc ;
+	//return 0;
+	for(counter = 0; counter< no_of_quantum; counter++)
+	{
+		first->data[j]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
+		if(!first->data[j])
+		{
+
+			printk(KERN_INFO "Error in quantum allocation\n");
+			return 0;
+		}
+		else
+		{
+			printk(KERN_INFO "quantum allocated successfully\n");
+			memset(first->data[j],0,sizeof(ldev->quantum));
+		}	
+		
+		if(lcount >= llquantum)
+			llquantum = ldev->quantum;
+		else
+			llquantum = lcount;
+		could_not_copy = copy_from_user(first->data[j],&buf[length_write],llquantum);
+		printk(KERN_INFO "data value is %s\n",(char *)first->data[j]);
+		if((j == ldev->qset-1)&&(no_of_qset_item >1))
+		{
+			j = 0;
+			if(!first->next)
+			return 0;
+			else
+			first = first->next;
+
 
 		}
-		could_not_copy = copy_from_user(ldev->qset_struc->data[counter],&buf[length_write],llquantum);
-			
+		else
+		j++;
 		
-		length_write = length_write - could_not_copy+llquantum;		
+		length_write = length_write - could_not_copy+llquantum;
+		lcount = lcount - llquantum;
+
+				
 	}
+	
 
 	if(length_write == count)
 	{
-		printk(KERN_INFO "copy from user %ld \n",length_write);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
+		printk(KERN_INFO "copy from user successfully %ld \n",length_write);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
 	}
 
-	printk(KERN_INFO "copy from user %ld \n",length_write);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
-	if(ldev->qset_struc->data != NULL)
-	{
-		printk(KERN_INFO "kmalloc successfully");
-	}
+	printk(KERN_INFO "copy from user %ld %d  %ld\n",length_write,no_of_quantum,lcount);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
 
-	else
-		printk(KERN_INFO "erro\n");
 
 	return (length_write);
 
