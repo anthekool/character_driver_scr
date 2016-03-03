@@ -140,12 +140,10 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 			llquantum = lcount;
 		could_not_copy = copy_from_user(first->data[j],&buf[length_write],llquantum);
 		printk(KERN_INFO "data value is %s\n",(char *)first->data[j]);
-		if((j == ldev->qset-1)&&(no_of_qset_item >1))
+		if(j == ldev->qset-1)
 		{
 			j = 0;
-			if(!first->next)
-			return 0;
-			else
+			if(first->next)
 			first = first->next;
 
 

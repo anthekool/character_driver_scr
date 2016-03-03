@@ -69,16 +69,16 @@ ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 		g_count = g_count - llquantum;
 		printk(KERN_INFO "no of byte value %ld %ld %d %s\n",no_of_byte,could_read_not_copy,counter,(char *)ldev->qset_struc->data[j]);
 
-		if((j == ldev->qset-1)&&(no_qset_struc > 1))
+		if(j == ldev->qset-1)
 		{
 			j = 0;			
+			if(ldev->qset_struc)
 			ldev->qset_struc = ldev->qset_struc->next;
-			if(!ldev->qset_struc)
-			{
-				printk(KERN_INFO "error in next location\n");
-				return 0;
-			}
-		//no_of_quantum = llqset;
+			else
+			printk(KERN_INFO "error in next  qset location\n");
+				
+			
+		
 		}
 
 
