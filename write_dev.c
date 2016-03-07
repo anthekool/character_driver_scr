@@ -35,15 +35,18 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos
 	if(count %llquantum)
 	no_of_quantum++;
 
+	*fpos = (int)fops->f_pos;
 
-	if((int)*fpos> SIZE)
+	if(*fpos > SIZE)
 	{
 
 		printk(KERN_INFO "file exceeded device size");
 		return 0;
 	}
 
-	*fpos = (int)fops->f_pos;
+	if(*fpos + count > SIZE)
+		count = SIZE - *fpos;
+
 	printk(KERN_INFO "file position value at starting  is %d %d\n",(int)*fpos,(int)fops->f_pos);	
 	lcount = count;
 	
