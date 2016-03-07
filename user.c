@@ -4,13 +4,14 @@
 #include<sys/types.h>
 #include<sys/stat.h>
 #include<unistd.h>
-char write_bytes[]="long way to go ki hai anupam work hard";
-char read_bytes[50];
+char write_bytes[]="8888888888888888888888888888888888888889889898989891111111111111111111111111111111111111111111199999999999109999999999999666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666667777777777777777777777777777777777777777777777000000";
+
+
 int main()
 {
 	int fd,len,wr,rd;
 
-	fd = open("./node1",O_RDWR);
+	fd = open("./link",O_WRONLY);
 	if(fd == -1)
 	printf("error in opening file\n");
 	else
@@ -21,26 +22,11 @@ int main()
 	printf("data write successfully\n");
 	else
 	printf("error in writing\n");
-	rd = read(fd,read_bytes,len);
-	if(rd == len)
-	printf("read successfully\n");
-	else
-	printf("error in reading file\n");
 	
-	printf("read and write num %d %d\n",rd,wr);
-	printf("read string is = %s %d\n",read_bytes,fd);	
+	printf("write no of byte is = %d\n",wr);	
+	
 	close(fd);
 	return 0;
 
 }
-     /* #include <sys/types.h>
-       #include <sys/stat.h>
-       #include <fcntl.h>
-       #include <unistd.h>
-
-       int mknod(const char *pathname, mode_t mode, dev_t dev);
-
-       #include <fcntl.h>          //  Definition of AT_* constants 
-       #include <sys/stat.h>
-
-       int mknodat(int dirfd, const char *pathname, mode_t mode, dev_t dev);*/
+     

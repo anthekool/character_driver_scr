@@ -9,22 +9,23 @@
 #include <linux/fs.h>
 
 extern ssize_t  write_dev(struct file *, const char *, size_t , loff_t *);
-
-
 struct scull_qset *first;
-ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_pos)
+
+
+ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos)
 {
 	struct scull_dev *ldev;
 	int counter=0,i=0,no_of_qset_item=0,no_of_quantum,j=0;
 	int llqset,llquantum,datasize;
 	long could_not_copy,length_write=0;
 	size_t lcount;
-	
+
 	/*read outside memory pointing  I/O address */
 	ldev = fops->private_data; 
 	llqset = ldev->qset;
 	llquantum = ldev->quantum;
 	datasize = (llqset*llquantum);
+	ldev->size = SIZE;
 	/*calculate number of qset item means no of qset structure*/
 	no_of_qset_item = count /datasize;
 	if(count%datasize)
@@ -33,7 +34,17 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 	no_of_quantum = (count/llquantum);
 	if(count %llquantum)
 	no_of_quantum++;
-	
+
+
+	if((int)*fpos> SIZE)
+	{
+
+		printk(KERN_INFO "file exceeded device size");
+		return 0;
+	}
+
+	*fpos = (int)fops->f_pos;
+	printk(KERN_INFO "file position value at starting  is %d %d\n",(int)*fpos,(int)fops->f_pos);	
 	lcount = count;
 	
 	printk(KERN_INFO "Enter in write file with quantum no %d\n",no_of_quantum);
@@ -58,7 +69,7 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 			
 			else
 			{
-				memset(first,0,sizeof(struct scull_qset));
+				memset(first,'\0',sizeof(struct scull_qset));
 				printk(KERN_INFO "Error in first qset item memory allocation\n");
 				
 			
@@ -77,22 +88,21 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 
 				
 			}
+		
 		}
-					/*qset item to be initialized one by one */
+		/*qset item to be initialized one by one */
 		else
 
 		{
-			//printk(KERN_INFO "present in second file %d",no_of_qset_struc);
+			
 			first->next = (struct scull_qset *)kmalloc(sizeof(struct scull_qset),GFP_KERNEL);
 						
 			if(first->next)
 			{
 			
 				printk(KERN_INFO "next qset crtead successfully\n");
-				//first = first->next;
 				memset(first->next,0,sizeof(struct scull_qset));
 				first = first->next;
-				//return 0;
 			}
 			else
 			{
@@ -115,10 +125,9 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 	
 		}
 	}
-	
-	//return 0;	
+		
+
 	first = ldev->qset_struc ;
-	//return 0;
 	for(counter = 0; counter< no_of_quantum; counter++)
 	{
 		first->data[j]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
@@ -152,20 +161,20 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *f_po
 		j++;
 		
 		length_write = length_write - could_not_copy+llquantum;
-		lcount = lcount - llquantum;
+		lcount 	= lcount - llquantum;
+		*fpos 	= *fpos+ llquantum;
 
 				
 	}
 	
-
+	fops->f_pos= *fpos;
+	printk(KERN_INFO "file position value at end is %d %d\n",(int)*fpos,(int)fops->f_pos);	
 	if(length_write == count)
 	{
-		printk(KERN_INFO "copy from user successfully %ld \n",length_write);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
+		printk(KERN_INFO "copy from user successfully %ld \n",length_write);
 	}
 
-	printk(KERN_INFO "copy from user %ld %d  %ld\n",length_write,no_of_quantum,lcount);///(char *)(ldev->qset_struc->data[0]));////,could_not_copy);
-
-
+	printk(KERN_INFO "copy from user %ld %d  %ld\n",length_write,no_of_quantum,lcount);
 	return (length_write);
 
 
