@@ -8,11 +8,7 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>
 
-//extern ssize_t  read_dev(struct file *,char *, size_t , loff_t *);
-//long could_read_not_copy,final_nof_byte=0,length_write =0;
 extern loff_t llseek_dev(struct file *filp, loff_t off, int whence);
-
-
 
 loff_t llseek_dev(struct file *filp, loff_t off, int whence)
 {

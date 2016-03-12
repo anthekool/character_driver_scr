@@ -65,6 +65,7 @@ ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 	printk(KERN_INFO "no of qset structure %d\n",no_qset_struc);
 
 	for(counter = q_pos;counter < no_of_quantum; counter++)
+//	while(ldev->qset_struc->data[j]+q_pos_rest != NULL)
 {
 
 
@@ -81,7 +82,7 @@ ssize_t read_dev(struct file *fops, char *buf, size_t count, loff_t *f_pos)
 
 		no_of_byte = no_of_byte + llquantum - could_read_not_copy- q_pos_rest;
 		g_count = g_count - llquantum + q_pos_rest;
-		*fpos = *fpos + llquantum- q_pos_rest;
+		*fpos = *fpos + llquantum- q_pos_rest -could_read_not_copy;
 		printk(KERN_INFO "no of byte value %ld %s\n",no_of_byte,(char *)ldev->qset_struc->data[j]+q_pos_rest);
 		q_pos_rest = 0;
 		if(j == ldev->qset-1)

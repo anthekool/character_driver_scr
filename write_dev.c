@@ -8,16 +8,20 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>
 
+
 extern ssize_t  write_dev(struct file *, const char *, size_t , loff_t *);
 struct scull_qset *first;
 
 
 ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos)
 {
+
+
 	struct scull_dev *ldev;
 	int counter=0,i=0,no_of_qset_item=0,no_of_quantum,j=0;
-	int llqset,llquantum,datasize;
+	int llqset,llquantum,datasize,qset_pos,quantum_pos,quantum_rest;
 	long could_not_copy,length_write=0;
+	//static int  previous_quantum_pos,prev_quantum_rest,previous qset_pos;
 	size_t lcount;
 
 	/*read outside memory pointing  I/O address */
@@ -26,16 +30,46 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos
 	llquantum = ldev->quantum;
 	datasize = (llqset*llquantum);
 	ldev->size = SIZE;
+	*fpos = (int)fops->f_pos;
+
 	/*calculate number of qset item means no of qset structure*/
-	no_of_qset_item = count /datasize;
+	/*no_of_qset_item = count /datasize;
 	if(count%datasize)
 	no_of_qset_item++;
-	/*calculate number of quantum*/
+	calculate number of quantum
 	no_of_quantum = (count/llquantum);
 	if(count %llquantum)
-	no_of_quantum++;
+	no_of_quantum++;*/
 
-	*fpos = (int)fops->f_pos;
+				
+	qset_pos = (*fpos/datasize);
+	if(*fpos % datasize)
+	qset_pos++; 
+	quantum_pos = (*fpos/llquantum);
+	if(*fpos % llquantum)
+	quantum_pos++;
+	quantum_rest = (*fpos % llquantum);
+
+    	/*calculate number of qset item means no of qset structure*/
+        no_of_qset_item = (count+*fpos)/datasize;
+
+        if((count+*fpos)%datasize)
+        no_of_qset_item++;
+	
+        /*calculate number of quantum*/
+        no_of_quantum = (count/llquantum);
+        if(count %llquantum)
+        no_of_quantum++;
+
+
+	//if(quantum_rest)
+	//{
+		
+	//	no_of_quantum++;
+
+	//}
+
+
 
 	if(*fpos > SIZE)
 	{
@@ -53,7 +87,7 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos
 	printk(KERN_INFO "Enter in write file with quantum no %d\n",no_of_quantum);
 	
 	
-	for(i = 0; i < no_of_qset_item; i++)
+	for(i = qset_pos; i <= no_of_qset_item; i++)
 	{
 		
 		printk(KERN_INFO "qset item no is = %d\n",no_of_qset_item);
@@ -93,7 +127,8 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos
 			}
 		
 		}
-		/*qset item to be initialized one by one */
+		
+			/*qset item to be initialized one by one */
 		else
 
 		{
@@ -130,9 +165,12 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos
 	}
 		
 
-	first = ldev->qset_struc ;
+	first = ldev->qset_struc;
+
+	j = quantum_pos;
 	for(counter = 0; counter< no_of_quantum; counter++)
 	{
+
 		first->data[j]= (void **)kmalloc(ldev->quantum,GFP_KERNEL);
 		if(!first->data[j])
 		{
@@ -150,8 +188,8 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos
 			llquantum = ldev->quantum;
 		else
 			llquantum = lcount;
-		could_not_copy = copy_from_user(first->data[j],&buf[length_write],llquantum);
-		printk(KERN_INFO "data value is %s\n",(char *)first->data[j]);
+		could_not_copy = copy_from_user(first->data[j]+quantum_rest,&buf[length_write],llquantum - quantum_rest);
+		////////printk(KERN_INFO "data value is %s\n",(char *)first->data[j]);
 		if(j == ldev->qset-1)
 		{
 			j = 0;
@@ -163,14 +201,19 @@ ssize_t write_dev(struct file *fops, const char *buf, size_t count, loff_t *fpos
 		else
 		j++;
 		
-		length_write = length_write - could_not_copy+llquantum;
-		lcount 	= lcount - llquantum;
-		*fpos 	= *fpos+ llquantum;
+		length_write = length_write - could_not_copy+llquantum - quantum_rest;
+		lcount 	= lcount - llquantum + quantum_rest;
+		*fpos 	= *fpos+ llquantum-quantum_rest;
+		printk(KERN_INFO "data value is %ld %s\n",length_write,(char *)first->data[j]);
+		quantum_rest = 0;
 
 				
 	}
 	
 	fops->f_pos= *fpos;
+	//previous_qset_pos  = no_of_qset_item;
+	//previous_quantum_pos = j;
+	 
 	printk(KERN_INFO "file position value at end is %d %d\n",(int)*fpos,(int)fops->f_pos);	
 	if(length_write == count)
 	{
